@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/bootloader.elf",
+            "name": "Debug Microcontroller",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "serverpath": "JLinkGDBServerCLExe",
+            "armToolchainPath": "/usr/bin",
+            "device": "STM32H743ZI",
+            "interface": "swd",
+            "serialNumber": "", 
+            "runToEntryPoint": "main",
+            // "rtos": "FreeRTOS",
+            // "svdFile": "${workspaceRoot}/STM32H743x.svd",
+
+        }
+    ]
+}

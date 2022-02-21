@@ -1,0 +1,5 @@
+r
+loadbin   build/bootloader.bin, 0x08000000
+verifybin build/bootloader.bin, 0x08000000
+rnh
+exit

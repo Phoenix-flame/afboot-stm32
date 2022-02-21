@@ -2,13 +2,11 @@
 #include <stdint.h>
 
 #include "stm32h7_regs.h"
-#include "usart.h"
 #include "gpio.h"
 #include "mpu.h"
 #include "qspi.h"
 #include "start_kernel.h"
 
-static void *usart_base = (void *)USART1_BASE;
 static void *gpio_base = (void *)GPIOA_BASE;
 
 void clock_setup(void)
@@ -197,36 +195,36 @@ void ext_mem_setup(void)
 	gpio_set_fmc(gpio_base, 'G', 0);
 	gpio_set_fmc(gpio_base, 'G', 1);
 	gpio_set_fmc(gpio_base, 'G', 2);
-	gpio_set_fmc(gpio_base, 'G', 3);
+	// gpio_set_fmc(gpio_base, 'G', 3);
 	gpio_set_fmc(gpio_base, 'G', 4);
 	gpio_set_fmc(gpio_base, 'G', 5);
 	gpio_set_fmc(gpio_base, 'G', 8);
 	gpio_set_fmc(gpio_base, 'G', 15);
 	/* GPIOH  */
-	gpio_set_fmc(gpio_base, 'H', 2);
-	gpio_set_fmc(gpio_base, 'H', 3);
-	gpio_set_fmc(gpio_base, 'H', 5);
-	gpio_set_fmc(gpio_base, 'H', 6);
-	gpio_set_fmc(gpio_base, 'H', 7);
-	gpio_set_fmc(gpio_base, 'H', 8);
-	gpio_set_fmc(gpio_base, 'H', 9);
-	gpio_set_fmc(gpio_base, 'H', 10);
-	gpio_set_fmc(gpio_base, 'H', 11);
-	gpio_set_fmc(gpio_base, 'H', 12);
-	gpio_set_fmc(gpio_base, 'H', 13);
-	gpio_set_fmc(gpio_base, 'H', 14);
-	gpio_set_fmc(gpio_base, 'H', 15);
-	/* GPIOI  */
-	gpio_set_fmc(gpio_base, 'I', 0);
-	gpio_set_fmc(gpio_base, 'I', 1);
-	gpio_set_fmc(gpio_base, 'I', 2);
-	gpio_set_fmc(gpio_base, 'I', 3);
-	gpio_set_fmc(gpio_base, 'I', 4);
-	gpio_set_fmc(gpio_base, 'I', 5);
-	gpio_set_fmc(gpio_base, 'I', 6);
-	gpio_set_fmc(gpio_base, 'I', 7);
-	gpio_set_fmc(gpio_base, 'I', 9);
-	gpio_set_fmc(gpio_base, 'I', 10);
+	// gpio_set_fmc(gpio_base, 'H', 2);
+	// gpio_set_fmc(gpio_base, 'H', 3);
+	// gpio_set_fmc(gpio_base, 'H', 5);
+	// gpio_set_fmc(gpio_base, 'H', 6);
+	// gpio_set_fmc(gpio_base, 'H', 7);
+	// gpio_set_fmc(gpio_base, 'H', 8);
+	// gpio_set_fmc(gpio_base, 'H', 9);
+	// gpio_set_fmc(gpio_base, 'H', 10);
+	// gpio_set_fmc(gpio_base, 'H', 11);
+	// gpio_set_fmc(gpio_base, 'H', 12);
+	// gpio_set_fmc(gpio_base, 'H', 13);
+	// gpio_set_fmc(gpio_base, 'H', 14);
+	// gpio_set_fmc(gpio_base, 'H', 15);
+	// /* GPIOI  */
+	// gpio_set_fmc(gpio_base, 'I', 0);
+	// gpio_set_fmc(gpio_base, 'I', 1);
+	// gpio_set_fmc(gpio_base, 'I', 2);
+	// gpio_set_fmc(gpio_base, 'I', 3);
+	// gpio_set_fmc(gpio_base, 'I', 4);
+	// gpio_set_fmc(gpio_base, 'I', 5);
+	// gpio_set_fmc(gpio_base, 'I', 6);
+	// gpio_set_fmc(gpio_base, 'I', 7);
+	// gpio_set_fmc(gpio_base, 'I', 9);
+	// gpio_set_fmc(gpio_base, 'I', 10);
 
 	/*  Reset FMC */
 	*RCC_D1AHB1RSTR &= 0xffffefff;
@@ -239,10 +237,10 @@ void ext_mem_setup(void)
 	/* Bank2 config (SDCR2/SDTR2) is the most of time done by bank1 registers
 	 * (SDCR1 /SDTR1) FMC_CLK/2 */
 	*FMC_SDCR1 = 0x000019e5;
-	*FMC_SDCR2 = 0x000019e5;
+	// *FMC_SDCR2 = 0x000019e5;
 
 	*FMC_SDTR1 = 0x0fffffff;
-	*FMC_SDTR2 = 0x0fffffff;
+	// *FMC_SDTR2 = 0x0fffffff;
 
 	/* SDRAM initialization sequence */
 	/* Clock enable command */
@@ -343,6 +341,11 @@ static void clean_dcache(void)
 	asm volatile ("isb");
 }
 
+__attribute__((always_inline)) static inline void __set_MSP(uint32_t topOfMainStack)
+{
+  asm volatile ("MSR msp, %0" : : "r" (topOfMainStack) : );
+}
+
 volatile uint32_t val;
 
 int main(void)
@@ -359,18 +362,38 @@ int main(void)
 		.dfm = QUADSPI_CR_DFM,
 	};
 
-	mpu_config(0xd0000000);
+	mpu_config(0xC0000000);
 
 	/* configure clocks */
 	clock_setup();
 
 
-	gpio_set(gpio_base, 'A', 8, 0, GPIOx_MODER_MODERy_GPOUTPUT, GPIOx_OSPEEDR_OSPEEDRy_HIGH, GPIOx_PUPDR_NOPULL);
+	gpio_set(GPIOA_BASE, 'A', 8, 0, GPIOx_MODER_MODERy_GPOUTPUT, GPIOx_OSPEEDR_OSPEEDRy_HIGH, GPIOx_PUPDR_NOPULL);
+
+	
+#if 0
+	/* configure external memory controler */
+	ext_mem_setup();
+
+	gpio_set_qspi(gpio_base, 'F', 10, GPIOx_PUPDR_NOPULL, 0x9); //CLK
+	/*  QSPI BANK1 */
+	gpio_set_qspi(gpio_base, 'B', 6, GPIOx_PUPDR_PULLUP, 0xa); //CS
+	gpio_set_qspi(gpio_base, 'F', 8, GPIOx_PUPDR_NOPULL, 0xa); //DO
+	gpio_set_qspi(gpio_base, 'F', 9, GPIOx_PUPDR_NOPULL, 0xa); //D1
+	gpio_set_qspi(gpio_base, 'F', 7, GPIOx_PUPDR_NOPULL, 0x9); //D2
+	gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
+
+
+	quadspi_init(&qspi_h743_params, (void *)QUADSPI_BASE);
+#endif
+
+	clean_dcache();
+	clean_icache();
 
 	while (1)
 	{
 		val ++;
-		for (uint32_t i = 0 ; i < 40000000 ; i ++) { asm volatile ("nop"); }
+		for (uint32_t i = 0 ; i < 400000 ; i ++) { asm volatile ("nop"); }
 		if (val & 2)
 		{
 			*(volatile uint32_t*)(GPIOA_BASE + 0x18) = 0x100;
@@ -381,33 +404,16 @@ int main(void)
 		}
 	}
 
-	/* configure external memory controler */
-	ext_mem_setup();
+	// Not working
+	asm volatile ("cpsid i");
+	volatile uint32_t* vector_addr = (uint32_t*)(0x08020200);
+	__set_MSP(vector_addr);
+	*(volatile uint32_t*)(SCB_BASE + 0x008) = (uint32_t*)(0x08020200);
 
-	gpio_set_qspi(gpio_base, 'B', 2, GPIOx_PUPDR_NOPULL, 0x9); //CLK
-	/*  QSPI BANK1 */
-	gpio_set_qspi(gpio_base, 'G', 6, GPIOx_PUPDR_PULLUP, 0xa); //CS
-	gpio_set_qspi(gpio_base, 'F', 8, GPIOx_PUPDR_NOPULL, 0xa); //DO
-	gpio_set_qspi(gpio_base, 'F', 9, GPIOx_PUPDR_NOPULL, 0xa); //D1
-	gpio_set_qspi(gpio_base, 'F', 7, GPIOx_PUPDR_NOPULL, 0x9); //D2
-	gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
-	/*  QSPI BANK2 */
-	gpio_set_qspi(gpio_base, 'C', 11, GPIOx_PUPDR_PULLUP, 0x9); //CS
-	gpio_set_qspi(gpio_base, 'H', 2, GPIOx_PUPDR_NOPULL, 0x9); //DO
-	gpio_set_qspi(gpio_base, 'H', 3, GPIOx_PUPDR_NOPULL, 0x9); //D1
-	gpio_set_qspi(gpio_base, 'G', 9, GPIOx_PUPDR_NOPULL, 0x9); //D2
-	gpio_set_qspi(gpio_base, 'G', 14, GPIOx_PUPDR_NOPULL, 0x9); //D3
+	asm volatile ("cpsie i");
 
-	quadspi_init(&qspi_h743_params, (void *)QUADSPI_BASE);
-
-	gpio_set_usart(gpio_base, 'B', 14, 4);
-	gpio_set_usart(gpio_base, 'B', 15, 4);
-
-	usart_setup(usart_base, 125000000);
-	usart_putch(usart_base, '.');
-
-	clean_dcache();
-	clean_icache();
+	void (*kernel)() = (uint32_t*)(0x08020200 + 4);
+	kernel();
 
 	start_kernel();
 
@@ -441,9 +447,7 @@ void reset(void)
 
 static void noop(void)
 {
-	usart_putch(usart_base, 'E');
-	while (1) {
-	}
+	asm volatile ("nop");
 }
 
 extern unsigned long _stack_top;
