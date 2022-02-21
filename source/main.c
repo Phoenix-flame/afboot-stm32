@@ -343,8 +343,11 @@ static void clean_dcache(void)
 	asm volatile ("isb");
 }
 
+volatile uint32_t val;
+
 int main(void)
 {
+	val = 0;
 	struct qspi_params qspi_h743_params = {
 		.address_size = QUADSPI_CCR_ADSIZE_32BITS,
 		.fifo_threshold = QUADSPI_CR_FTHRES(0),
@@ -360,6 +363,23 @@ int main(void)
 
 	/* configure clocks */
 	clock_setup();
+
+
+	gpio_set(gpio_base, 'A', 8, 0, GPIOx_MODER_MODERy_GPOUTPUT, GPIOx_OSPEEDR_OSPEEDRy_HIGH, GPIOx_PUPDR_NOPULL);
+
+	while (1)
+	{
+		val ++;
+		for (uint32_t i = 0 ; i < 40000000 ; i ++) { asm volatile ("nop"); }
+		if (val & 2)
+		{
+			*(volatile uint32_t*)(GPIOA_BASE + 0x18) = 0x100;
+		}
+		else 
+		{
+			*(volatile uint32_t*)(GPIOA_BASE + 0x18) = (0x100 << 16);
+		}
+	}
 
 	/* configure external memory controler */
 	ext_mem_setup();
